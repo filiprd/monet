@@ -1,6 +1,6 @@
 ThisBuild / version := "1.0.0"
 
-ThisBuild / scalaVersion := "3.4.2"
+ThisBuild / scalaVersion := "3.6.3"
 
 ThisBuild / semanticdbEnabled := true
 
