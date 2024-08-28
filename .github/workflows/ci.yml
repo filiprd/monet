@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  pull_request: {}
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java:
+          - graalvm11-ce
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Cache for sbt & coursier ♨️"
+        uses: coursier/cache-action@v6
+
+      - name: "Create Docker network 🐳"
+        run: sudo docker network create monet-network
+
+      - name: "Starting up PostgreSQL and Redis 🐳"
+        run: docker compose -f tests/docker-compose.yml up -d
+
+      - name: "Install Nix ❄️"
+        uses: cachix/install-nix-action@v27
+
+      - name: "Install Cachix ❄️"
+        uses: cachix/cachix-action@v14
+        with:
+          name: monet
+          signingKey: "${{ secrets.CACHIX_SIGNING_KEY }}"
+
+      - name: "Run unit and integration tests 🚀"
+        run: nix-shell --argstr jdk "${{ matrix.java }}" --run "sbt 'scalafmtCheckAll;test;it:test'"
+
+      - name: "Shut down Postgres & Redis 🐳"
+        run: docker compose -f tests/docker-compose.yml down

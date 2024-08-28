@@ -1,0 +1,17 @@
+include:
+  - ../tests/docker-compose.yml
+
+services:
+  monet:
+    restart: always
+    image: monet:latest
+    ports:
+      - "1411:1411"
+    environment:
+      - DEBUG=false
+      - MONET_ENV=test
+    networks:
+      - monet-network
+    depends_on:
+      - postgres
+      - redis
